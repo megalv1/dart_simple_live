@@ -23,14 +23,26 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Locate Flutter Project Root
+        id: locate_project
+        run: |
+          # 查找 pubspec.yaml 所在的文件夹目录
+          PROJECT_PATH=$(dirname $(find . -maxdepth 3 -name "pubspec.yaml" | head -n 1))
+          echo "Found Flutter project at: $PROJECT_PATH"
+          echo "PROJECT_PATH=$PROJECT_PATH" >> $GITHUB_ENV
+
       - name: Get Dependencies
-        run: flutter pub get
+        run: |
+          cd ${{ env.PROJECT_PATH }}
+          flutter pub get
 
       - name: Build Release APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: |
+          cd ${{ env.PROJECT_PATH }}
+          flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SimpleLive-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.PROJECT_PATH }}/build/app/outputs/flutter-apk/app-release.apk
