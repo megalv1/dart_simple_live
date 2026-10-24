@@ -29,6 +29,12 @@ jobs:
           keytool -genkeypair -v -keystore "$RUNNER_TEMP/keystore.jks" -keyalg RSA -keysize 2048 -validity 10000 -alias simplelive -storepass simplelive123 -keypass simplelive123 -dname "CN=Simple Live, OU=Dev, O=SimpleLive, L=NA, ST=NA, C=CN"
           printf 'storeFile=%s\nstorePassword=simplelive123\nkeyPassword=simplelive123\nkeyAlias=simplelive\n' "$RUNNER_TEMP/keystore.jks" > simple_live_app/android/key.properties
 
+      - name: Pin plugin versions for compatibility
+        run: |
+          cd simple_live_app
+          sed -i -E 's/^  auto_orientation_v2:.*/  auto_orientation_v2: 2.4.6/' pubspec.yaml
+          grep -n "auto_orientation_v2" pubspec.yaml
+
       - name: Flutter pub get
         run: |
           cd simple_live_app
@@ -37,7 +43,7 @@ jobs:
       - name: Build release APK (split per ABI)
         run: |
           cd simple_live_app
-          flutter build apk --release --split-per-abi
+          flutter build apk --release --split-per-abi --no-tree-shake-icons
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
@@ -45,3 +51,4 @@ jobs:
           name: simple-live-apk
           path: simple_live_app/build/app/outputs/flutter-apk/*.apk
           retention-days: 7
+          if-no-files-found: error
