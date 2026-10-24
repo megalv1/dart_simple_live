@@ -1,0 +1,70 @@
+name: build-windows-manual
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Setup Flutter 3.38.10
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.10
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Pin dependency versions
+        shell: python
+        run: |
+          import re, pathlib
+          p = pathlib.Path("simple_live_app/pubspec.yaml")
+          lines = p.read_text(encoding="utf-8").splitlines()
+          out = []
+          in_dep = False
+          for ln in lines:
+              if re.match(r'^(dependencies|dev_dependencies):\s*$', ln):
+                  in_dep = True
+                  out.append(ln)
+                  continue
+              if in_dep and re.match(r'^\S', ln):
+                  in_dep = False
+              if in_dep:
+                  m = re.match(r'^(\s+)([A-Za-z0-9_]+):\s*\^([0-9][^\s#]*)\s*(#.*)?$', ln)
+                  if m:
+                      ln = f"{m.group(1)}{m.group(2)}: {m.group(3)}" + (f"  {m.group(4)}" if m.group(4) else "")
+              out.append(ln)
+          p.write_text("\n".join(out) + "\n", encoding="utf-8")
+          print("pinned:", sum(1 for l in out if re.match(r'^\s+[A-Za-z0-9_]+: [0-9]', l)))
+
+      - name: Flutter pub get
+        working-directory: simple_live_app
+        run: flutter pub get
+
+      - name: Build Windows release
+        working-directory: simple_live_app
+        run: flutter build windows --release --no-tree-shake-icons
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $src = "simple_live_app/build/windows/x64/runner/Release"
+          Get-ChildItem -Recurse $src | Select-Object FullName,Length | Format-Table -AutoSize
+          New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+          Compress-Archive -Path "$src\*" -DestinationPath "dist/SimpleLive-1.11.4-windows-x64.zip" -CompressionLevel Optimal
+          Get-Item "dist/SimpleLive-1.11.4-windows-x64.zip" | Select-Object Name,Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: simple-live-windows
+          path: dist/SimpleLive-1.11.4-windows-x64.zip
+          retention-days: 7
+          if-no-files-found: error
