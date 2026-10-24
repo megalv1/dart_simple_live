@@ -29,11 +29,58 @@ jobs:
           keytool -genkeypair -v -keystore "$RUNNER_TEMP/keystore.jks" -keyalg RSA -keysize 2048 -validity 10000 -alias simplelive -storepass simplelive123 -keypass simplelive123 -dname "CN=Simple Live, OU=Dev, O=SimpleLive, L=NA, ST=NA, C=CN"
           printf 'storeFile=%s\nstorePassword=simplelive123\nkeyPassword=simplelive123\nkeyAlias=simplelive\n' "$RUNNER_TEMP/keystore.jks" > simple_live_app/android/key.properties
 
-      - name: Pin plugin versions for compatibility
+      - name: Pin dependency versions
         run: |
           cd simple_live_app
-          sed -i -E 's/^  auto_orientation_v2:.*/  auto_orientation_v2: 2.4.6/' pubspec.yaml
-          grep -n "auto_orientation_v2" pubspec.yaml
+          sed -i -E 's/^  archive:.*/  archive: 4.0.7/' pubspec.yaml
+          sed -i -E 's/^  auto_orientation_v2:.*/  auto_orientation_v2: 2.3.6/' pubspec.yaml
+          sed -i -E 's/^  canvas_danmaku:.*/  canvas_danmaku: 0.2.7/' pubspec.yaml
+          sed -i -E 's/^  connectivity_plus:.*/  connectivity_plus: 7.0.0/' pubspec.yaml
+          sed -i -E 's/^  cross_file:.*/  cross_file: 0.3.5/' pubspec.yaml
+          sed -i -E 's/^  crypto:.*/  crypto: 3.0.7/' pubspec.yaml
+          sed -i -E 's/^  cupertino_icons:.*/  cupertino_icons: 1.0.8/' pubspec.yaml
+          sed -i -E 's/^  device_info_plus:.*/  device_info_plus: 12.2.0/' pubspec.yaml
+          sed -i -E 's/^  dio:.*/  dio: 5.9.0/' pubspec.yaml
+          sed -i -E 's/^  dynamic_color:.*/  dynamic_color: 1.8.1/' pubspec.yaml
+          sed -i -E 's/^  extended_image:.*/  extended_image: 10.0.1/' pubspec.yaml
+          sed -i -E 's/^  file_picker:.*/  file_picker: 10.3.7/' pubspec.yaml
+          sed -i -E 's/^  floating:.*/  floating: 6.0.0/' pubspec.yaml
+          sed -i -E 's/^  flutter_easyrefresh:.*/  flutter_easyrefresh: 2.2.2/' pubspec.yaml
+          sed -i -E 's/^  flutter_inappwebview:.*/  flutter_inappwebview: 6.1.5/' pubspec.yaml
+          sed -i -E 's/^  flutter_smart_dialog:.*/  flutter_smart_dialog: 4.9.8+9/' pubspec.yaml
+          sed -i -E 's/^  flutter_staggered_grid_view:.*/  flutter_staggered_grid_view: 0.7.0/' pubspec.yaml
+          sed -i -E 's/^  get:.*/  get: 4.7.3/' pubspec.yaml
+          sed -i -E 's/^  hive:.*/  hive: 2.2.3/' pubspec.yaml
+          sed -i -E 's/^  hive_flutter:.*/  hive_flutter: 1.1.0/' pubspec.yaml
+          sed -i -E 's/^  image_gallery_saver_plus:.*/  image_gallery_saver_plus: 4.0.1/' pubspec.yaml
+          sed -i -E 's/^  intl:.*/  intl: 0.20.2/' pubspec.yaml
+          sed -i -E 's/^  logger:.*/  logger: 2.6.2/' pubspec.yaml
+          sed -i -E 's/^  lottie:.*/  lottie: 3.3.2/' pubspec.yaml
+          sed -i -E 's/^  media_kit:.*/  media_kit: 1.2.2/' pubspec.yaml
+          sed -i -E 's/^  media_kit_libs_video:.*/  media_kit_libs_video: 1.0.7/' pubspec.yaml
+          sed -i -E 's/^  media_kit_video:.*/  media_kit_video: 2.0.0/' pubspec.yaml
+          sed -i -E 's/^  network_info_plus:.*/  network_info_plus: 7.0.0/' pubspec.yaml
+          sed -i -E 's/^  package_info_plus:.*/  package_info_plus: 9.0.0/' pubspec.yaml
+          sed -i -E 's/^  path_provider:.*/  path_provider: 2.1.5/' pubspec.yaml
+          sed -i -E 's/^  permission_handler:.*/  permission_handler: 12.0.1/' pubspec.yaml
+          sed -i -E 's/^  qr_code_scanner_plus:.*/  qr_code_scanner_plus: 2.0.14/' pubspec.yaml
+          sed -i -E 's/^  qr_flutter:.*/  qr_flutter: 4.1.0/' pubspec.yaml
+          sed -i -E 's/^  remixicon:.*/  remixicon: 1.4.1/' pubspec.yaml
+          sed -i -E 's/^  screen_brightness:.*/  screen_brightness: 2.1.7/' pubspec.yaml
+          sed -i -E 's/^  share_plus:.*/  share_plus: 12.0.1/' pubspec.yaml
+          sed -i -E 's/^  shelf:.*/  shelf: 1.4.2/' pubspec.yaml
+          sed -i -E 's/^  shelf_router:.*/  shelf_router: 1.1.4/' pubspec.yaml
+          sed -i -E 's/^  signalr_netcore:.*/  signalr_netcore: 1.4.4/' pubspec.yaml
+          sed -i -E 's/^  sticky_headers:.*/  sticky_headers: 0.3.0+2/' pubspec.yaml
+          sed -i -E 's/^  udp:.*/  udp: 5.0.3/' pubspec.yaml
+          sed -i -E 's/^  url_launcher:.*/  url_launcher: 6.3.2/' pubspec.yaml
+          sed -i -E 's/^  uuid:.*/  uuid: 4.5.2/' pubspec.yaml
+          sed -i -E 's/^  volume_controller:.*/  volume_controller: 3.4.0/' pubspec.yaml
+          sed -i -E 's/^  wakelock_plus:.*/  wakelock_plus: 1.4.0/' pubspec.yaml
+          sed -i -E 's/^  webdav_client:.*/  webdav_client: 1.2.2/' pubspec.yaml
+          sed -i -E 's/^  window_manager:.*/  window_manager: 0.5.1/' pubspec.yaml
+          echo "--- pinned result ---"
+          grep -E "^  (auto_orientation_v2|dynamic_color|wakelock_plus|volume_controller|qr_code_scanner_plus):" pubspec.yaml
 
       - name: Flutter pub get
         run: |
@@ -43,7 +90,7 @@ jobs:
       - name: Build release APK (split per ABI)
         run: |
           cd simple_live_app
-          flutter build apk --release --split-per-abi --no-tree-shake-icons
+          flutter build apk --release --split-per-abi
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
